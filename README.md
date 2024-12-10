@@ -1,6 +1,6 @@
-# Getting Started with Create React App
+# Getting Started with Create React Flow
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Add an .env file with the REACT_APP_OPENAI_API_KEY
 
 ## Available Scripts
 
