@@ -11,6 +11,7 @@ import ReactFlow, {
   MarkerType
 } from 'reactflow';
 import { generateFlowchartPattern } from './openaiService';
+import { toPng } from 'html-to-image';
 
 function App() {
   const [nodes, setNodes] = useState([]);
@@ -36,6 +37,41 @@ function App() {
   useEffect(() => {
     localStorage.setItem('edges', JSON.stringify(edges));
   }, [edges]);
+
+  //Download flowchart as png
+  function downloadImage(dataUrl) {
+    const a = document.createElement('a');
+   
+    a.setAttribute('download', 'reactflow.png');
+    a.setAttribute('href', dataUrl);
+    a.click();
+  }
+  const imageWidth = 1524;
+  const imageHeight = 798;
+  const exportToImage = useCallback(() => {
+    const reactFlowWrapper = document.querySelector('.react-flow');
+    
+    if (!reactFlowWrapper) {
+      console.error('React Flow wrapper not found.');
+      return;
+    }
+  
+    toPng(reactFlowWrapper, {
+      backgroundColor: '#fffff', // Set a consistent background color
+      width: imageWidth,          // Specify desired width
+      height: imageHeight,        // Specify desired height
+      style: {
+        width: `${imageWidth}px`,
+        height: `${imageHeight}px`,
+        transform: 'scale(1)',   // Reset scale if needed
+      },
+    })
+      .then(downloadImage)
+      .catch((err) => {
+        console.error('Error exporting image:', err);
+      });
+  }, []);
+  
 
   const onNodesChange = useCallback(
     (changes) =>
@@ -107,7 +143,7 @@ function App() {
           width: 20,
           height: 20,
         },
-        label: edgeLabel|| null,
+        label: edgeLabel || null,
       };
       setEdges((eds) => [...eds, newEdge]);
     }
@@ -172,7 +208,7 @@ function App() {
 
       if (flowchartData && flowchartData.length) {
         flowchartData.forEach(({ fromNode, fromNodeX, fromNodeY, toNode, toNodeX, toNodeY, edgeLabel }) => {
-          addEdgeFromInput(fromNode, fromNodeX, fromNodeY, toNode, toNodeX, toNodeY, edgeLabel||'');
+          addEdgeFromInput(fromNode, fromNodeX, fromNodeY, toNode, toNodeX, toNodeY, edgeLabel || '');
         });
       } else {
         console.error('No data generated from input.');
@@ -189,7 +225,9 @@ function App() {
       <button className="clear-all-button" onClick={clearAll}>
         Clear All
       </button>
-
+      <button className="export-button" onClick={exportToImage}>
+        Export
+      </button>
       {selectedNodeId ? (
         <div className="node-edit">
           <input
@@ -198,18 +236,18 @@ function App() {
             onChange={handleNodeLabelChange}
           />
           <div className="color-buttons">
-          <button
-            className="green"
-            onClick={() => changeNodeColor('#A8D5BA')}
-          ></button>
-          <button
-            className="yellow"
-            onClick={() => changeNodeColor('#FDFD96')}
-          ></button>
-          <button
-            className="red"
-            onClick={() => changeNodeColor('#F4A8A8')}
-          ></button>
+            <button
+              className="green"
+              onClick={() => changeNodeColor('#A8D5BA')}
+            ></button>
+            <button
+              className="yellow"
+              onClick={() => changeNodeColor('#FDFD96')}
+            ></button>
+            <button
+              className="red"
+              onClick={() => changeNodeColor('#F4A8A8')}
+            ></button>
           </div>
 
           <button onClick={deleteNode}>Delete Node</button>
@@ -227,7 +265,6 @@ function App() {
           + Add Node
         </button>
       )}
-
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -248,7 +285,6 @@ function App() {
         <Background />
         <Controls />
       </ReactFlow>
-
       <div className="user-input-container">
         <textarea
           value={userInput}
