@@ -218,6 +218,7 @@ function App() {
       if (flowchartData && flowchartData.length) {
         flowchartData.forEach(({ fromNode, fromNodeX, fromNodeY, toNode, toNodeX, toNodeY, edgeLabel }) => {
           addEdgeFromInput(fromNode, fromNodeX, fromNodeY, toNode, toNodeX, toNodeY, edgeLabel || '');
+          console.log(fromNode, fromNodeX, fromNodeY, toNode, toNodeX, toNodeY, edgeLabel);
         });
       } else {
         console.error('No data generated from input.');
