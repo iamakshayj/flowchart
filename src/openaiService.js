@@ -77,11 +77,10 @@ export const generateFlowchartPattern = async (userInput) => {
   }
 };
 
-// Generate Node Positions for Tree-like Structure
 export const generateTreeNodePositions = (nodes, edges) => {
   const positions = {};
-  const xIncrement = 300; 
-  const yIncrement = 100; 
+  const xIncrement = 300;
+  const yIncrement = 100;
 
   // Identify the root node dynamically
   const allToNodes = new Set(edges.map((edge) => edge.toNode));
@@ -94,31 +93,78 @@ export const generateTreeNodePositions = (nodes, edges) => {
   // Helper function to recursively position child nodes
   const positionNodes = (currentNode, currentX, currentY, visitedNodes = new Set()) => {
     visitedNodes.add(currentNode.name);
-  
+
     const childEdges = edges.filter((edge) => edge.fromNode === currentNode.name);
     const totalChildren = childEdges.length;
-  
-    childEdges.forEach((edge, index) => {
+
+    if (totalChildren === 0) return; // No children to position
+
+    // Calculate the width of the subtree for even spacing
+    const totalSubtreeWidth = totalChildren * xIncrement;
+    let startX = currentX - (totalSubtreeWidth - xIncrement) / 2;
+
+    childEdges.forEach((edge) => {
       const childNodeName = edge.toNode;
-  
+
       if (!visitedNodes.has(childNodeName)) {
-        // Spread children symmetrically around the parent
-        const childX = currentX + (index - (totalChildren - 1) / 2) * xIncrement;
-        positions[childNodeName] = { x: childX, y: currentY + yIncrement };
-  
+        let childX = startX;
+        const childY = currentY + yIncrement;
+
+        // Check for overlapping positions and adjust
+        while (Object.values(positions).some(pos => pos.x === childX && pos.y === childY)) {
+          childX += xIncrement; // Move to the next available position
+        }
+
+        positions[childNodeName] = { x: childX, y: childY };
+
+        startX += xIncrement;
+
         const childNode = nodes.find((node) => node.name === childNodeName);
         if (childNode) {
-          positionNodes(childNode, childX, currentY + yIncrement, visitedNodes);
+          // Recursively position grandchildren
+          positionNodes(childNode, childX, childY, visitedNodes);
         }
       }
+    });
+  };
+
+  // Adjust parent node positions based on child positions
+  const adjustParentPositions = () => {
+    // Reverse traversal of nodes (from bottom to top)
+    const visitedNodes = new Set();
+    const reverseNodes = [...nodes].reverse();
+
+    reverseNodes.forEach((node) => {
+      if (visitedNodes.has(node.name)) return;
+
+      const childEdges = edges.filter((edge) => edge.fromNode === node.name);
+      const childPositions = childEdges
+        .map((edge) => positions[edge.toNode])
+        .filter((pos) => pos); // Ensure child positions exist
+
+      if (childPositions.length > 0) {
+        // Compute the midpoint of child nodes' x positions
+        const minX = Math.min(...childPositions.map((pos) => pos.x));
+        const maxX = Math.max(...childPositions.map((pos) => pos.x));
+        const midpointX = (minX + maxX) / 2;
+
+        // Update the current node's x position
+        positions[node.name].x = midpointX;
+      }
+
+      visitedNodes.add(node.name);
     });
   };
 
   // Start positioning from the root node
   positionNodes(rootNode, positions[rootNode.name].x, positions[rootNode.name].y);
 
+  // Adjust parent positions after initial positioning
+  adjustParentPositions();
+
   return positions;
 };
+
 
 
 // Full Flowchart Generation
