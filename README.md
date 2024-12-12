@@ -1,22 +1,38 @@
 # Node Functionality:
 Add/Delete Node 
+
 Add/Delete Edges
+
 Edit Text
+
 Edit Color
+
 Clear flowchart
+
 Autosave
+
 Export as PNG 
+
 Zoom out/in
+
 Lock positions
+
 Minimap Text Input
+
 
 # Generate Flowchart:
 Input prompt and get the GPT response 
+
 fetchGPTResponse 
+
 parseGPTResponse
+
 Convert the GPT response to node text 
+
 Calculate node Positions
+
 Handle node and edges
+
 
 # Getting Started with Create React Flow
 
