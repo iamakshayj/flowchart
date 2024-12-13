@@ -38,7 +38,7 @@ function App() {
     localStorage.setItem('edges', JSON.stringify(edges));
   }, [edges]);
 
-  //Download flowchart as png
+  // Download flowchart as png
   function downloadImage(dataUrl) {
     const a = document.createElement('a');
    
@@ -46,7 +46,7 @@ function App() {
     a.setAttribute('href', dataUrl);
     a.click();
   }
-  // frame size for png 
+  // Frame size for png 
   const imageWidth = 1524;
   const imageHeight = 798;
   const exportToImage = useCallback(() => {
@@ -58,7 +58,7 @@ function App() {
     }
   
     toPng(reactFlowWrapper, {
-      backgroundColor: '#fffff', 
+      backgroundColor: '#ADD8E6', 
       width: imageWidth,          
       height: imageHeight,        
       style: {
@@ -73,7 +73,7 @@ function App() {
       });
   }, []);
   
-  //update nodes/edges on every change
+  // Update nodes/edges on every change
   const onNodesChange = useCallback(
     (changes) =>
       setNodes((nds) =>
@@ -97,7 +97,7 @@ function App() {
     []
   );
 
-  //Select state for nodes/edges to wdit
+  // Select state for nodes/edges to wdit
   const onNodeClick = useCallback(
     (_, node) => {
       setSelectedNodeId(node.id);
@@ -120,7 +120,7 @@ function App() {
     setSelectedEdgeId(null);
   }, []);
 
-  //Add nodes function
+  // Add nodes function
   const addNode = (label, x = Math.random() * 500, y = Math.random() * 500) => {
     if (!nodes.some((node) => node.id === label)) {
       const newNode = {
@@ -132,7 +132,7 @@ function App() {
     }
   };
 
-  //Add edges to generate flowchart
+  // Add edges to generate flowchart
   const addEdgeFromInput = (fromNode, fromX, fromY, toNode, toX, toY, edgeLabel) => {
     addNode(fromNode, fromX, fromY);
     addNode(toNode, toX, toY);
@@ -153,7 +153,7 @@ function App() {
     }
   };
 
-  //Delete node button and related edges
+  // Delete node button and related edges
   const deleteNode = () => {
     if (selectedNodeId) {
       setNodes((nds) => nds.filter((node) => node.id !== selectedNodeId));
@@ -169,7 +169,7 @@ function App() {
     }
   };
 
-  //Update node text/color
+  // Update node text/color
   const handleNodeLabelChange = (event) => {
     const updatedLabel = event.target.value;
     setNodes((nds) =>
@@ -191,7 +191,7 @@ function App() {
     }
   };
 
-  //Update edge text
+  // Update edge text
   const handleEdgeLabelChange = (event) => {
     const updatedLabel = event.target.value;
     setEdges((eds) =>
@@ -202,7 +202,7 @@ function App() {
     setEdgeLabel(updatedLabel);
   };
 
-  //Black flowchart
+  // Black flowchart
   const clearAll = () => {
     setNodes([]);
     setEdges([]);
@@ -210,7 +210,7 @@ function App() {
     setSelectedEdgeId(null);
   };
 
-  //Get user input and pass param to generate flowchart
+  // Get user input and pass param to generate flowchart
   const handleInputSubmit = async () => {
     try {
       const flowchartData = await generateFlowchartPattern(userInput);

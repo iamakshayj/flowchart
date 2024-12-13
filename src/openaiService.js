@@ -10,7 +10,7 @@ export const generateFlowchartPattern = async (userInput) => {
   if (!userInput.trim()) return null;
 
   try {
-    // Generate the edges from GPT
+    // Generate the response from GPT
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -24,7 +24,7 @@ export const generateFlowchartPattern = async (userInput) => {
     const generatedText = response.choices[0].message.content.trim();
     console.log("GPT Response:", generatedText);
 
-    // Parse edges
+    // Parse response
     const edges = generatedText.split('\n').map((line) => {
       const pattern = /Node "([^"]+)" to Node "([^"]+)"(?: with edge "([^"]+)")?/i;
       const match = pattern.exec(line.trim());
@@ -130,7 +130,6 @@ export const generateTreeNodePositions = (nodes, edges) => {
 
   // Adjust parent node positions based on child positions
   const adjustParentPositions = () => {
-    // Reverse traversal of nodes (from bottom to top)
     const visitedNodes = new Set();
     const reverseNodes = [...nodes].reverse();
 
@@ -156,8 +155,49 @@ export const generateTreeNodePositions = (nodes, edges) => {
     });
   };
 
+  // Fix node merging where children lead to the same node
+  const handleMergingNodes = () => {
+    // Iterate over all nodes to check if any node is being converged upon
+    const childToParents = edges.reduce((acc, edge) => {
+      if (!acc[edge.toNode]) acc[edge.toNode] = [];
+      acc[edge.toNode].push(edge.fromNode);
+      return acc;
+    }, {});
+
+    Object.keys(childToParents).forEach((childNode) => {
+      const parents = childToParents[childNode];
+      if (parents.length > 1) {
+        // Multiple parents are leading to the same node (merge situation)
+        const childNodePosition = positions[childNode];
+        const minX = Math.min(...parents.map((parent) => positions[parent].x));
+        const maxX = Math.max(...parents.map((parent) => positions[parent].x));
+
+        // Reposition the converging node (childNode) to be centered
+        positions[childNode].x = (minX + maxX) / 2;
+
+        // Ensure there's enough space between parents
+        let startX = minX - (parents.length - 1) * (xIncrement / 2);
+        let deltaX = xIncrement;
+
+        // Adjust the parents to make sure they don't overlap with each other
+        parents.forEach((parent, index) => {
+          positions[parent].x = startX + index * deltaX;
+        });
+
+        // Ensure proper spacing between the merged child and the parents
+        const totalWidth = (parents.length - 1) * xIncrement;
+        if (positions[childNode].x < minX + totalWidth) {
+          positions[childNode].x = minX + totalWidth + xIncrement;
+        }
+      }
+    });
+  };
+
   // Start positioning from the root node
   positionNodes(rootNode, positions[rootNode.name].x, positions[rootNode.name].y);
+
+  // Handle cases where child nodes are converging to the same node
+  handleMergingNodes();
 
   // Adjust parent positions after initial positioning
   adjustParentPositions();
